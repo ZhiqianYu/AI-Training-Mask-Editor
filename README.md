@@ -4,6 +4,10 @@
 
 🫁🖌️ 一款交互式的肺部掩码编辑器，适用于医学图像分割的标注精修任务，特别适用于肺炎X光图像的研究与伪标签优化。
 
+## 🖼️ 软件界面预览
+
+<img src="image.png" alt="界面预览" width="600"/>
+
 ### 核心功能
 
 - 加载肺部图像与对应掩码
@@ -39,6 +43,21 @@ python lung_mask_editor.py
 📧 联系方式：yu-zhiqian@outlook.com
 © 2025 Zhiqian Yu
 
+## 📚 引用
+
+如果您在学术研究中使用了此工具，请这样引用：
+
+> Yu, Z. (2025). *LungMaskEditor: An Interactive Mask Refinement Tool (for Chest X-ray Segmentation)*. Version 1.0. Available at: https://github.com/zhiqianyu/AI-Training-Mask-Editor
+
+BibTeX:
+```bibtex
+@misc{yu2025lungmaskeditor,
+  author       = {Yu, Zhiqian},
+  title        = {LungMaskEditor: An Interactive Mask Refinement Tool for Chest X-ray Segmentation},
+  year         = {2025},
+  howpublished = {\url{https://github.com/zhiqianyu/AI-Training-Mask-Editor}},
+  note         = {Version 1.0. Personal and research use. Commercial use requires permission.}
+}
 ---
 
 ## English Instructions
@@ -46,6 +65,10 @@ python lung_mask_editor.py
 # LungMaskEditor 🫁🖌️
 
 An interactive GUI tool for editing lung region segmentation masks based on chest X-ray images. Designed for research and annotation refinement tasks in medical imaging workflows.
+
+## 🖼️ Software Screenshot
+
+<img src="image.png" alt="Screenshot" width="600"/>
 
 ## Features
 
@@ -87,3 +110,19 @@ Commercial use is strictly prohibited without written permission.
 
 📧 Contact: yu-zhiqian@outlook.com  
 © 2025 Zhiqian Yu
+
+## 📚 Citation
+
+If you use this tool in academic publications, please cite it as:
+
+> Yu, Z. (2025). *LungMaskEditor: An Interactive Mask Refinement Tool (for Chest X-ray Segmentation)*. Version 1.0. Available at: https://github.com/zhiqianyu/AI-Training-Mask-Editor
+
+BibTeX:
+```bibtex
+@misc{yu2025lungmaskeditor,
+  author       = {Yu, Zhiqian},
+  title        = {LungMaskEditor: An Interactive Mask Refinement Tool for Chest X-ray Segmentation},
+  year         = {2025},
+  howpublished = {\url{https://github.com/zhiqianyu/AI-Training-Mask-Editor}},
+  note         = {Version 1.0. Personal and research use. Commercial use requires permission.}
+}
