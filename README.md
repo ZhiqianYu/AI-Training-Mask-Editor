@@ -80,8 +80,9 @@ Commercial use is strictly prohibited without written permission.
 ```bash
 pip install opencv-python pillow numpy
 python lung_mask_editor.py
+'''
 
-### 授权声明
+## 授权声明
 
 本软件仅供个人非商业用途，使用时须注明作者。
 禁止未经许可的商业使用。
