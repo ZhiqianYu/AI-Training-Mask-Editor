@@ -80,7 +80,7 @@ Commercial use is strictly prohibited without written permission.
 ```bash
 pip install opencv-python pillow numpy
 python lung_mask_editor.py
-'''
+```
 
 ## 授权声明
 
