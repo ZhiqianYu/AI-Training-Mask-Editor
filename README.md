@@ -6,7 +6,7 @@
 
 ## 🖼️ 软件界面预览
 
-<img src="image.png" alt="界面预览" width="600"/>
+<img src="image.png" alt="界面预览" width="800"/>
 
 ### 核心功能
 
@@ -58,6 +58,8 @@ BibTeX:
   howpublished = {\url{https://github.com/zhiqianyu/AI-Training-Mask-Editor}},
   note         = {Version 1.0. Personal and research use. Commercial use requires permission.}
 }
+```
+
 ---
 
 ## English Instructions
@@ -68,7 +70,7 @@ An interactive GUI tool for editing lung region segmentation masks based on ches
 
 ## 🖼️ Software Screenshot
 
-<img src="image.png" alt="Screenshot" width="600"/>
+<img src="image.png" alt="Screenshot" width="800"/>
 
 ## Features
 
@@ -126,3 +128,4 @@ BibTeX:
   howpublished = {\url{https://github.com/zhiqianyu/AI-Training-Mask-Editor}},
   note         = {Version 1.0. Personal and research use. Commercial use requires permission.}
 }
+```
