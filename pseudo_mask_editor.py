@@ -346,42 +346,56 @@ class LungMaskEditor:
     def draw(self, event):
         if not self.is_drawing or self.current_mask_img is None:
             return
-        
-        # 将画布坐标转换为图像坐标
+
+        # 获取canvas和图像尺寸
         canvas_width = self.canvas.winfo_width()
         canvas_height = self.canvas.winfo_height()
         img_height, img_width = self.current_mask_img.shape[:2]
-        
+
         display_width = int(img_width * self.scale_factor)
         display_height = int(img_height * self.scale_factor)
-        
+
         offset_x = (canvas_width - display_width) / 2
         offset_y = (canvas_height - display_height) / 2
-        
-        # 计算图像上的点
+
+        # 计算图像坐标
         img_x = int((event.x - offset_x) / self.scale_factor)
         img_y = int((event.y - offset_y) / self.scale_factor)
         last_img_x = int((self.last_x - offset_x) / self.scale_factor)
         last_img_y = int((self.last_y - offset_y) / self.scale_factor)
-        
-        # 检查是否超出图像边界
-        if (0 <= img_x < img_width and 0 <= img_y < img_height and 
+
+        if (0 <= img_x < img_width and 0 <= img_y < img_height and
             0 <= last_img_x < img_width and 0 <= last_img_y < img_height):
-            
-            # 确定绘制颜色
-            color = 255 if self.draw_mode == "add" else 0
-            
-            # 在mask上绘制
-            cv2.line(self.current_mask_img, (last_img_x, last_img_y), (img_x, img_y), color, self.brush_size)
-            
-            # 更新显示图像
+
+            if self.draw_mode == "add":
+                # 添加白色线条
+                cv2.line(self.current_mask_img, (last_img_x, last_img_y), (img_x, img_y), 255, self.brush_size)
+
+                # 自动闭合连接：只保留外部轮廓，移除碎块
+                contours, _ = cv2.findContours(self.current_mask_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                cleaned_mask = np.zeros_like(self.current_mask_img)
+                cv2.drawContours(cleaned_mask, contours, -1, 255, -1)
+                self.current_mask_img = cleaned_mask
+
+            else:  # 删除模式
+                # 画黑线
+                cv2.line(self.current_mask_img, (last_img_x, last_img_y), (img_x, img_y), 0, self.brush_size)
+
+                # 删除小的孤立区域（默认阈值20像素面积）
+                # self.current_mask_img = self.remove_small_islands(self.current_mask_img, min_area=20)
+                # 保留两个最大区域（即左右肺叶）
+                self.current_mask_img = self.remove_non_lung_regions(self.current_mask_img, keep_top=2)
+
+            # 更新显示
             self.update_display_image()
-        
+
+        # 更新上一个坐标
         self.last_x = event.x
         self.last_y = event.y
-        
-        # 在绘制过程中实时更新光标位置
+
+        # 更新光标
         self.update_cursor_position(event.x, event.y)
+
 
     def stop_draw(self, event):
         self.is_drawing = False
@@ -396,16 +410,37 @@ class LungMaskEditor:
         if self.current_mask_img is None or self.current_file is None:
             messagebox.showwarning("警告", "没有可保存的掩码！")
             return
-        # 使用映射的文件名保存掩码（去掉后缀）
+
+        # 从当前掩码中重新提取轮廓（只保留外部）
+        contours, _ = cv2.findContours(self.current_mask_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        # 创建一个干净的黑图作为新掩码
+        new_mask = np.zeros_like(self.current_mask_img)
+        new_mask = self.remove_small_islands(new_mask)
+        
+        
+        # 绘制轮廓为白色前景
+        cv2.drawContours(new_mask, contours, -1, color=255, thickness=-1)
+
+        # 保存掩码
         mask_filename = self.mask_name_map.get(self.current_file, self.current_file)
-        mask_filename_no_ext = os.path.splitext(mask_filename)[0]  # 去掉后缀
+        mask_filename_no_ext = os.path.splitext(mask_filename)[0]
         mask_path = os.path.join(self.mask_dir, mask_filename_no_ext + ".png")
-        cv2.imwrite(mask_path, self.current_mask_img)
-        if len(mask_filename_no_ext) > 21:
-            display_name = mask_filename_no_ext[:20] + "..."
-        else:
-            display_name = mask_filename_no_ext
-        self.show_save_status(f"已保存:\n{display_name}")
+        cv2.imwrite(mask_path, new_mask)
+
+        self.show_save_status(f"已保存:\n{mask_filename_no_ext if len(mask_filename_no_ext) <= 21 else mask_filename_no_ext[:20] + '...'}")\
+    
+    def remove_small_islands(self, mask, min_area=20):
+        # 找到所有白色区域
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cleaned_mask = np.zeros_like(mask)
+
+        for cnt in contours:
+            area = cv2.contourArea(cnt)
+            if area >= min_area:
+                cv2.drawContours(cleaned_mask, [cnt], -1, 255, -1)
+
+        return cleaned_mask
     
     def show_save_status(self, message):
         self.save_status_label.config(text=message)
@@ -545,6 +580,23 @@ class LungMaskEditor:
             self.progress_label.config(text=f"{self.current_index + 1}/{len(self.file_list)}")
         else:
             self.progress_label.config(text="0/0")
+    
+    def remove_non_lung_regions(self, mask, keep_top=2):
+        """
+        保留最大的 `keep_top` 个区域，删除其余所有区域。
+        通常设置 keep_top=2 保留左右两个肺叶。
+        """
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        # 将轮廓按面积排序（降序）
+        sorted_contours = sorted(contours, key=cv2.contourArea, reverse=True)
+
+        # 创建新mask，仅保留前 N 大区域
+        cleaned_mask = np.zeros_like(mask)
+        for cnt in sorted_contours[:keep_top]:
+            cv2.drawContours(cleaned_mask, [cnt], -1, 255, -1)
+
+        return cleaned_mask
 
 if __name__ == "__main__":
     __author__ = "Zhiqian Yu"
